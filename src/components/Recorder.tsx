@@ -272,15 +272,6 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
                 ) : null}
               </div>
             )}
-
-            {hasPermission === false && (
-              <button
-                onClick={requestPermission}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Grant Microphone Permission
-              </button>
-            )}
           </div>
         </div>
       </div>
