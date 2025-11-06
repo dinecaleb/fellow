@@ -2,6 +2,7 @@
  * NoteCard component - displays a preview of a note in the list
  */
 
+import { memo, useMemo } from "react";
 import { Note } from "../../lib/types";
 
 interface NoteCardProps {
@@ -9,9 +10,10 @@ interface NoteCardProps {
   onClick: () => void;
 }
 
-export function NoteCard({ note, onClick }: NoteCardProps) {
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
+function NoteCardComponent({ note, onClick }: NoteCardProps) {
+  // Memoize date formatting to avoid recalculation on every render
+  const formattedDate = useMemo(() => {
+    const date = new Date(note.updatedAt);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -23,14 +25,16 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
-  };
+  }, [note.updatedAt]);
 
-  const formatDuration = (seconds?: number): string => {
-    if (!seconds) return "";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+  // Memoize duration formatting (only for audio notes)
+  const audioDuration = note.type === "audio" ? note.duration : undefined;
+  const formattedDuration = useMemo(() => {
+    if (!audioDuration) return "";
+    const mins = Math.floor(audioDuration / 60);
+    const secs = audioDuration % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  }, [audioDuration]);
 
   return (
     <div
@@ -42,7 +46,7 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
           {note.title}
         </h3>
         <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
-          {formatDate(note.updatedAt)}
+          {formattedDate}
         </span>
       </div>
 
@@ -67,8 +71,8 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
               d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
             />
           </svg>
-          <span>{formatDuration(note.duration)}</span>
-          {note.duration && (
+          <span>{formattedDuration}</span>
+          {note.type === "audio" && note.duration && (
             <span className="ml-1 text-gray-400">• Audio memo</span>
           )}
         </div>
@@ -82,3 +86,6 @@ export function NoteCard({ note, onClick }: NoteCardProps) {
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const NoteCard = memo(NoteCardComponent);

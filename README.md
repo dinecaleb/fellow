@@ -58,21 +58,25 @@ src/
 ├── components/             # React UI components only
 │   ├── audio/
 │   │   └── AudioPlayerUI.tsx
+│   ├── note/
+│   │   ├── NoteCard.tsx        # Note preview card for list view
+│   │   ├── NoteViewHeader.tsx  # Note view header with edit controls
+│   │   └── NoteViewContent.tsx # Note content display (text/audio)
 │   ├── recorder/
 │   │   ├── AudioPreview.tsx
 │   │   └── RecordingControls.tsx
 │   ├── AudioPlayer.tsx     # Main audio player component
 │   ├── Recorder.tsx        # Main recorder component
-│   ├── NoteCard.tsx        # Note preview card for list view
 │   └── SplashScreen.tsx
 ├── hooks/                  # All custom React hooks centralized
 │   ├── useAudioPlayer.ts   # Audio playback logic
+│   ├── useAudioUrlLoader.ts # Audio URL loading from filesystem
 │   ├── useNotes.ts         # Note management (CRUD, search)
 │   ├── useRecorder.ts      # Audio recording functionality
 │   └── useStorage.ts       # Storage operations hook
 ├── pages/                  # Page components (routes)
 │   ├── Home.tsx            # Main list view with search
-│   ├── NoteView.tsx        # Single note view/editor
+│   ├── NoteView.tsx        # Single note view/editor (orchestrates components)
 │   └── NewNote.tsx         # Create new note (text or audio)
 ├── lib/                    # Core type definitions
 │   └── types.ts            # TypeScript type definitions

@@ -2,11 +2,12 @@
  * NoteViewContent component - displays note content (text or audio)
  */
 
-import { Note } from "../../lib/types";
+import { memo } from "react";
 import { AudioPlayer } from "../AudioPlayer";
 
 interface NoteViewContentProps {
-  note: Note;
+  noteType: "text" | "audio";
+  noteBody?: string;
   audioUrl: string | null;
   audioError: string | null;
   duration?: number;
@@ -14,8 +15,9 @@ interface NoteViewContentProps {
   onAudioError: (error: string) => void;
 }
 
-export function NoteViewContent({
-  note,
+function NoteViewContentComponent({
+  noteType,
+  noteBody,
   audioUrl,
   audioError,
   duration,
@@ -24,10 +26,10 @@ export function NoteViewContent({
 }: NoteViewContentProps) {
   return (
     <div className="px-4 py-6">
-      {note.type === "text" ? (
+      {noteType === "text" ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="prose max-w-none whitespace-pre-wrap text-gray-700">
-            {note.body || (
+            {noteBody || (
               <span className="italic text-gray-400">No content</span>
             )}
           </div>
@@ -57,3 +59,6 @@ export function NoteViewContent({
     </div>
   );
 }
+
+// Memoize to prevent re-renders when audio props haven't changed
+export const NoteViewContent = memo(NoteViewContentComponent);

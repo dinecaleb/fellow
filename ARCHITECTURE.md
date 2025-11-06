@@ -33,21 +33,25 @@ src/
 ├── components/             # React UI components only
 │   ├── audio/
 │   │   └── AudioPlayerUI.tsx
+│   ├── note/
+│   │   ├── NoteCard.tsx        # Note preview card for list view
+│   │   ├── NoteViewHeader.tsx  # Note view header with edit controls
+│   │   └── NoteViewContent.tsx # Note content display (text/audio)
 │   ├── recorder/
 │   │   ├── AudioPreview.tsx
 │   │   └── RecordingControls.tsx
 │   ├── AudioPlayer.tsx     # Main audio player component
 │   ├── Recorder.tsx        # Main recorder component
-│   ├── NoteCard.tsx
 │   └── SplashScreen.tsx
 ├── hooks/                  # All custom React hooks centralized
 │   ├── useAudioPlayer.ts   # Audio playback logic
+│   ├── useAudioUrlLoader.ts # Audio URL loading from filesystem
 │   ├── useNotes.ts         # Note management (CRUD, search)
 │   ├── useRecorder.ts      # Audio recording functionality
 │   └── useStorage.ts       # Storage operations hook
 ├── pages/                  # Page components (routes)
 │   ├── Home.tsx            # Main list view with search
-│   ├── NoteView.tsx        # Single note view/editor
+│   ├── NoteView.tsx        # Single note view/editor (orchestrates components)
 │   └── NewNote.tsx         # Create new note (text or audio)
 ├── lib/                    # Core type definitions
 │   └── types.ts            # TypeScript type definitions
@@ -115,8 +119,32 @@ Notes are managed through hooks:
 
 - **`useStorage`**: Provides storage operations (`loadNotes`, `saveNotes`)
 - **`useNotes`**: Provides CRUD operations and search functionality
+- **`useAudioUrlLoader`**: Handles loading audio files from Capacitor filesystem
 
 The hooks abstract away storage details, making it easy to swap storage backends in the future.
+
+### Note View Architecture
+
+The `NoteView` page follows a modular architecture:
+
+```
+pages/
+└── NoteView.tsx              # Main orchestrator component
+
+components/note/
+├── NoteViewHeader.tsx        # Header with title, edit controls, actions
+└── NoteViewContent.tsx       # Content display (text or audio player)
+
+hooks/
+└── useAudioUrlLoader.ts      # Audio file loading logic
+```
+
+**Benefits:**
+
+- Clear separation of concerns
+- Easy to test each component independently
+- Prevents unnecessary re-renders (NoteViewContent is memoized)
+- Audio loading logic is reusable
 
 ## State Management
 
@@ -218,7 +246,11 @@ The audio player module abstracts platform differences through:
 - **Code Splitting**: Vite automatically splits code by route
 - **Lazy Loading**: Consider lazy loading for large components
 - **Memoization**: Use `useMemo` and `useCallback` appropriately
-- **Virtual Lists**: Consider for large note lists (future)
+  - `NoteViewContent` is memoized to prevent unnecessary re-renders
+  - Handler functions are memoized with `useCallback`
+- **Component Memoization**: Key components use `React.memo` for performance
+- **Virtual Lists**: Consider for large note lists (future - see PERFORMANCE.md)
+
 
 ## Security
 

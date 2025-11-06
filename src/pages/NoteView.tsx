@@ -2,7 +2,7 @@
  * NoteView page - displays a single note (text or audio) with options to edit/delete
  */
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
 import { Note } from "../lib/types";
@@ -62,6 +62,19 @@ export function NoteView() {
       }
     };
   }, [audioUrl]);
+
+  // Memoize audio error handler to prevent re-renders
+  const handleAudioError = useCallback((error: string) => {
+    console.error("Audio error:", error);
+  }, []);
+
+  // Memoize duration to prevent re-renders when editing title
+  const audioDuration = useMemo(() => {
+    if (currentNote && currentNote.type === "audio") {
+      return currentNote.duration;
+    }
+    return undefined;
+  }, [currentNote]);
 
   const handleDelete = async () => {
     if (
@@ -146,16 +159,13 @@ export function NoteView() {
       />
 
       <NoteViewContent
-        note={note}
+        noteType={note.type}
+        noteBody={note.type === "text" ? note.body : undefined}
         audioUrl={audioUrl}
         audioError={audioError}
-        duration={
-          currentNote && currentNote.type === "audio"
-            ? currentNote.duration
-            : undefined
-        }
+        duration={audioDuration}
         audioPath={noteAudioPath || undefined}
-        onAudioError={(error: string) => console.error("Audio error:", error)}
+        onAudioError={handleAudioError}
       />
     </div>
   );

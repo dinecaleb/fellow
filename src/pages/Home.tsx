@@ -2,7 +2,7 @@
  * Home page - displays list of all notes with search functionality
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
 import { NoteCard } from "../components/note/NoteCard";
@@ -18,17 +18,21 @@ export function Home() {
     return searchQuery.trim() ? searchNotes(searchQuery) : notes;
   }, [notes, searchQuery, searchNotes]);
 
-  const handleNoteClick = (noteId: string) => {
-    navigate(`/note/${noteId}`);
-  };
+  // Memoize handlers to prevent NoteCard re-renders
+  const handleNoteClick = useCallback(
+    (noteId: string) => {
+      navigate(`/note/${noteId}`);
+    },
+    [navigate]
+  );
 
-  const handleNewTextNote = () => {
+  const handleNewTextNote = useCallback(() => {
     navigate("/new/text");
-  };
+  }, [navigate]);
 
-  const handleNewAudioNote = () => {
+  const handleNewAudioNote = useCallback(() => {
     navigate("/new/audio");
-  };
+  }, [navigate]);
 
   if (loading) {
     return (
@@ -54,8 +58,9 @@ export function Home() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notes..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
+          {/* Search Icon */}
           <svg
             className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
             fill="none"
@@ -69,6 +74,23 @@ export function Home() {
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
+          {/* Clear Button */}
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Clear search"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Error Message */}
