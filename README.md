@@ -6,6 +6,18 @@ A minimal but clean note-taking app for mobile and web.
 
 Memo-rable is a mobile-first Capacitor application built with React, TypeScript, and Vite. It supports both text notes and audio memos, with offline-first behavior and full search capabilities.
 
+## App Preview
+
+![Memo-rable App Screenshot](./public/App_Screenshot.png)
+
+The app features a clean, intuitive interface with:
+
+- **Search functionality** at the top for quick note filtering
+- **Unified note list** displaying both text and audio memos
+- **Note cards** showing title, content preview, type badge, and timestamp
+- **Floating action buttons** for quick access to create new notes (text or audio)
+- **Mobile-optimized design** with safe area support for modern iOS devices
+
 ## Features
 
 - **Text Notes**: Create and edit text notes with titles and bodies
