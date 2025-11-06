@@ -42,9 +42,9 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 pt-safe px-4 py-4">
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      {/* Fixed Header */}
+      <div className="bg-white border-b border-gray-200 pt-safe px-4 py-4 flex-shrink-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Memo-rable</h1>
 
         {/* Search Box */}
@@ -70,50 +70,54 @@ export function Home() {
             />
           </svg>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mx-4 mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Notes List */}
-      <div className="px-4 py-4">
-        {filteredNotes.length === 0 ? (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400 mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <p className="text-gray-600 mb-2">
-              {searchQuery ? "No notes found" : "No notes yet"}
-            </p>
-            {!searchQuery && (
-              <p className="text-sm text-gray-500">
-                Create your first note to get started
+      {/* Scrollable Notes List */}
+      <div className="flex-1 overflow-y-auto pb-safe">
+        <div className="px-4 py-4">
+          {filteredNotes.length === 0 ? (
+            <div className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <p className="text-gray-600 mb-2">
+                {searchQuery ? "No notes found" : "No notes yet"}
               </p>
-            )}
-          </div>
-        ) : (
-          filteredNotes.map((note: Note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onClick={() => handleNoteClick(note.id)}
-            />
-          ))
-        )}
+              {!searchQuery && (
+                <p className="text-sm text-gray-500">
+                  Create your first note to get started
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredNotes.map((note: Note) => (
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  onClick={() => handleNoteClick(note.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Floating Action Buttons */}

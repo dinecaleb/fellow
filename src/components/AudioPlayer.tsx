@@ -1,7 +1,6 @@
 /**
  * WhatsApp-style Audio Player Component
- * Uses NativeAudio plugin on iOS for reliable playback
- * Falls back to HTML5 audio on web/Android
+ * Simple, clean audio player with waveform visualization
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -38,20 +37,27 @@ export function AudioPlayer({
     platform === "ios" ||
     (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios");
 
-  // Check if NativeAudio plugin is available
   const isNativeAudioAvailable =
     NativeAudio &&
     typeof NativeAudio.preload === "function" &&
     typeof NativeAudio.play === "function";
 
   useEffect(() => {
+    // Cleanup previous audio first
+    cleanup();
+
     const initializeAudio = async () => {
-      // Try NativeAudio on iOS if available, otherwise use HTML5
+      // Small delay to ensure cleanup completes
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       if (isIOS && fileName && isNativeAudioAvailable) {
         try {
           await loadNativeAudio(fileName);
         } catch (err) {
-          console.warn("[AUDIOPLAYER] NativeAudio failed, using HTML5:", err);
+          console.warn(
+            "[AUDIOPLAYER] NativeAudio failed, using HTML5 fallback:",
+            err
+          );
           loadHTML5Audio(src);
         }
       } else {
@@ -67,22 +73,25 @@ export function AudioPlayer({
   }, [src, fileName, isIOS]);
 
   const cleanup = () => {
-    // Cleanup native audio
     if (nativeAudioAssetIdRef.current && isNativeAudioAvailable) {
       try {
+        // Stop playback first
         NativeAudio.stop({ assetId: nativeAudioAssetIdRef.current }).catch(
           () => {}
         );
-        NativeAudio.unload({ assetId: nativeAudioAssetIdRef.current }).catch(
-          () => {}
-        );
+        // Small delay to ensure stop completes before unload
+        setTimeout(() => {
+          NativeAudio.unload({ assetId: nativeAudioAssetIdRef.current! }).catch(
+            () => {}
+          );
+        }, 100);
       } catch (err) {
-        // Ignore cleanup errors
+        // Ignore cleanup errors - plugin may have internal state issues
+        console.warn("[AUDIOPLAYER] Cleanup warning:", err);
       }
       nativeAudioAssetIdRef.current = null;
     }
 
-    // Cleanup HTML5 audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -90,13 +99,11 @@ export function AudioPlayer({
       audioRef.current = null;
     }
 
-    // Cleanup HTML5 event listeners
     if (html5CleanupRef.current) {
       html5CleanupRef.current();
       html5CleanupRef.current = null;
     }
 
-    // Clear progress interval
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
@@ -106,31 +113,54 @@ export function AudioPlayer({
   const loadNativeAudio = async (filePath: string) => {
     setIsLoading(true);
 
-    const assetId = `audio-${Date.now()}`;
+    // Use a stable assetId based on file path to avoid conflicts
+    // Clean up any previous asset first
+    if (nativeAudioAssetIdRef.current) {
+      try {
+        await NativeAudio.unload({
+          assetId: nativeAudioAssetIdRef.current,
+        }).catch(() => {});
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+
+    // Create assetId from file path (sanitized) to ensure consistency
+    const assetId = `audio-${filePath.replace(/[^a-zA-Z0-9]/g, "-")}`;
     nativeAudioAssetIdRef.current = assetId;
 
-    const { uri } = await Filesystem.getUri({
-      path: filePath,
-      directory: Directory.Data,
-    });
+    try {
+      const { uri } = await Filesystem.getUri({
+        path: filePath,
+        directory: Directory.Data,
+      });
 
-    // Preload with maximum volume (1.0)
-    await NativeAudio.preload({
-      assetId,
-      assetPath: uri,
-      isUrl: true,
-      volume: 1.0, // Maximum volume
-      audioChannelNum: 1,
-    });
+      // Verify URI is valid
+      if (!uri || typeof uri !== "string") {
+        throw new Error("Invalid file URI");
+      }
 
-    setIsLoading(false);
-    if (initialDuration) {
-      setDuration(initialDuration);
+      await NativeAudio.preload({
+        assetId,
+        assetPath: uri,
+        isUrl: true,
+        volume: 1.0,
+        audioChannelNum: 1,
+      });
+
+      setIsLoading(false);
+      if (initialDuration) {
+        setDuration(initialDuration);
+      }
+    } catch (err) {
+      console.error("[AUDIOPLAYER] NativeAudio preload error:", err);
+      // Fallback to HTML5 audio if NativeAudio fails
+      nativeAudioAssetIdRef.current = null;
+      throw err; // Re-throw to trigger fallback
     }
   };
 
   const loadHTML5Audio = (audioSrc: string) => {
-    // Cleanup previous instance
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -139,7 +169,7 @@ export function AudioPlayer({
 
     const audio = new Audio(audioSrc);
     audioRef.current = audio;
-    audio.volume = 1.0; // Maximum volume
+    audio.volume = 1.0;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => {
@@ -175,7 +205,6 @@ export function AudioPlayer({
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
 
-    // Store cleanup function
     html5CleanupRef.current = () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
@@ -188,7 +217,6 @@ export function AudioPlayer({
   };
 
   const togglePlayPause = async () => {
-    // Native audio playback
     if (isIOS && nativeAudioAssetIdRef.current && isNativeAudioAvailable) {
       try {
         if (isPlaying) {
@@ -203,20 +231,17 @@ export function AudioPlayer({
           setIsPlaying(true);
           startProgressTimer();
         }
-      } catch (err) {
-        console.error("[AUDIOPLAYER] Native audio error:", err);
+      } catch {
         onError?.("Failed to play audio");
       }
       return;
     }
 
-    // HTML5 audio playback
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play().catch((err) => {
-          console.error("[AUDIOPLAYER] Play error:", err);
+        audioRef.current.play().catch(() => {
           onError?.("Failed to play audio");
         });
       }
@@ -245,22 +270,6 @@ export function AudioPlayer({
     }, 100);
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!duration) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = x / rect.width;
-    const newTime = percentage * duration;
-
-    setCurrentTime(newTime);
-
-    // Only seek HTML5 audio (NativeAudio doesn't support seeking)
-    if (audioRef.current && !isIOS) {
-      audioRef.current.currentTime = newTime;
-    }
-  };
-
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
@@ -268,14 +277,26 @@ export function AudioPlayer({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Generate waveform bars (fixed number for all audio)
+  const generateWaveform = () => {
+    const heights = [
+      20, 35, 25, 40, 30, 45, 35, 50, 40, 45, 35, 40, 30, 35, 25, 30, 20, 25,
+      15, 20, 25, 30, 35, 40, 45, 50, 45, 40, 35, 30,
+    ];
+    return heights;
+  };
+
+  const waveformHeights = generateWaveform();
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const filledBars = Math.floor((progress / 100) * waveformHeights.length);
 
   return (
-    <div className="flex items-center gap-3 bg-indigo-50 rounded-lg p-3 w-full">
+    <div className="flex items-center gap-2  py-3 w-full min-w-0 overflow-hidden">
+      {/* Play Button */}
       <button
         onClick={togglePlayPause}
         disabled={isLoading}
-        className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0"
       >
         {isLoading ? (
           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -302,24 +323,25 @@ export function AudioPlayer({
         )}
       </button>
 
-      <div className="flex-1 flex flex-col gap-1">
-        <div
-          className="relative h-2 bg-indigo-200 rounded-full cursor-pointer"
-          onClick={handleSeek}
-        >
-          <div
-            className="absolute top-0 left-0 h-full bg-indigo-600 rounded-full transition-all duration-100"
-            style={{ width: `${progress}%` }}
-          />
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-indigo-600 rounded-full shadow-md transition-all duration-100"
-            style={{ left: `calc(${progress}% - 8px)` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-gray-600">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
-        </div>
+      {/* Waveform */}
+      <div className=" flex-1 flex items-center gap-1 h-8 min-w-0 overflow-hidden">
+        {waveformHeights.map((height, index) => {
+          const isFilled = index < filledBars;
+          return (
+            <div
+              key={index}
+              className={`w-1 rounded-full transition-colors flex-shrink-0 ${
+                isFilled ? "bg-indigo-600" : "bg-gray-300"
+              }`}
+              style={{ height: `${height}%` }}
+            />
+          );
+        })}
+      </div>
+
+      {/* Time Display */}
+      <div className="text-sm font-bold text-gray-600 flex-shrink-0 min-w-[3rem] text-right">
+        {formatTime(duration)}
       </div>
     </div>
   );
