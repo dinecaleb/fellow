@@ -18,15 +18,31 @@ export function formatTime(seconds: number): string {
 
 /**
  * Generates waveform bar heights for visualization
- * Returns a fixed array of heights representing audio waveform
+ * Creates a simple wave pattern using sine function
  *
+ * @param numBars - Number of bars to generate (default: 30)
  * @returns Array of bar heights (percentages)
  */
-export function generateWaveform(): number[] {
-    const heights = [
-        20, 35, 25, 40, 30, 45, 35, 50, 40, 45, 35, 40, 30, 35, 25, 30, 20, 25,
-        15, 20, 25, 30, 35, 40, 45, 50, 45, 40, 35, 30,
-    ];
+export function generateWaveform(numBars: number = 30): number[] {
+    const heights: number[] = [];
+    const minHeight = 30; // Smallest bar height (%)
+    const maxHeight = 80; // Largest bar height (%)
+    const waveCycles = 8; // How many complete waves across all bars
+
+    for (let i = 0; i < numBars; i++) {
+        // Calculate position along the wave (0 to 2π * waveCycles)
+        const position = (i / numBars) * Math.PI * 2 * waveCycles;
+
+        // Get sine value (-1 to 1)
+        const sineValue = Math.sin(position);
+
+        // Convert sine value (-1 to 1) to height (minHeight to maxHeight)
+        // sineValue of -1 becomes minHeight, sineValue of 1 becomes maxHeight
+        const height = minHeight + ((sineValue + 1) / 2) * (maxHeight - minHeight);
+
+        heights.push(Math.round(height));
+    }
+
     return heights;
 }
 

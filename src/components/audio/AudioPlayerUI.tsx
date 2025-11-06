@@ -70,7 +70,7 @@ export function AudioPlayerUI({
       </button>
 
       {/* Waveform */}
-      <div className="flex-1 flex items-center gap-1 h-8 min-w-0 overflow-hidden">
+      <div className="flex-1 flex items-center gap-1 h-12 min-w-0 overflow-hidden">
         {waveformHeights.map((height, index) => {
           const isFilled = index < filledBars;
           return (
