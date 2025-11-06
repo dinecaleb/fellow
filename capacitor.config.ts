@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   // Live reload configuration - uncomment to enable live reload
   // Run: npm run live:ios or npm run live:android
   server: {
-    url: 'http://192.168.2.133:5173',
+
     cleartext: true,
     androidScheme: 'https',
   },
