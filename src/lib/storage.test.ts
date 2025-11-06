@@ -132,6 +132,117 @@ describe('Storage Utilities', () => {
             expect(parts.length).toBeGreaterThan(1);
             expect(Number(parts[0])).toBeGreaterThan(0);
         });
+
+        it('should generate IDs that are strings', () => {
+            const id = generateNoteId();
+            expect(typeof id).toBe('string');
+            expect(id.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('Edge Cases and Error Handling', () => {
+        it('should handle corrupted storage data gracefully', async () => {
+            vi.mocked(Preferences.get).mockResolvedValue({
+                value: '{ invalid json }',
+            });
+
+            const notes = await loadNotes();
+            expect(notes).toEqual([]);
+        });
+
+        it('should handle storage with missing notes array', async () => {
+            vi.mocked(Preferences.get).mockResolvedValue({
+                value: JSON.stringify({}),
+            });
+
+            const notes = await loadNotes();
+            expect(notes).toEqual([]);
+        });
+
+        it('should handle storage with null notes', async () => {
+            vi.mocked(Preferences.get).mockResolvedValue({
+                value: JSON.stringify({ notes: null }),
+            });
+
+            const notes = await loadNotes();
+            expect(notes).toEqual([]);
+        });
+
+        it('should handle storage with empty notes array', async () => {
+            vi.mocked(Preferences.get).mockResolvedValue({
+                value: JSON.stringify({ notes: [] }),
+            });
+
+            const notes = await loadNotes();
+            expect(notes).toEqual([]);
+        });
+
+        it('should handle save with empty array', async () => {
+            vi.mocked(Preferences.set).mockResolvedValue();
+
+            await saveNotes([]);
+
+            expect(Preferences.set).toHaveBeenCalledWith({
+                key: 'memorable_notes',
+                value: JSON.stringify({ notes: [] }),
+            });
+        });
+
+        it('should handle save with large number of notes', async () => {
+            const largeNotesArray: TextNote[] = Array.from({ length: 1000 }, (_, i) => ({
+                id: `note-${i}`,
+                type: 'text',
+                title: `Note ${i}`,
+                body: `Body ${i}`,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+            }));
+
+            vi.mocked(Preferences.set).mockResolvedValue();
+
+            await saveNotes(largeNotesArray);
+
+            expect(Preferences.set).toHaveBeenCalled();
+            const callArgs = vi.mocked(Preferences.set).mock.calls[0][0];
+            const savedData = JSON.parse(callArgs.value);
+            expect(savedData.notes.length).toBe(1000);
+        });
+
+        it('should preserve all note fields when saving', async () => {
+            const audioNote: AudioNote = {
+                id: '1',
+                type: 'audio',
+                title: 'Audio Note',
+                audioPath: '/path/to/audio.m4a',
+                duration: 120,
+                mimeType: 'audio/mp4',
+                createdAt: 1000,
+                updatedAt: 2000,
+            };
+
+            vi.mocked(Preferences.set).mockResolvedValue();
+
+            await saveNotes([audioNote]);
+
+            const callArgs = vi.mocked(Preferences.set).mock.calls[0][0];
+            const savedData = JSON.parse(callArgs.value);
+            expect(savedData.notes[0]).toEqual(audioNote);
+            expect(savedData.notes[0].mimeType).toBe('audio/mp4');
+            expect(savedData.notes[0].duration).toBe(120);
+        });
+
+        it('should handle network error on load', async () => {
+            vi.mocked(Preferences.get).mockRejectedValue(new Error('Network error'));
+
+            const notes = await loadNotes();
+            expect(notes).toEqual([]);
+        });
+
+        it('should throw error with descriptive message on save failure', async () => {
+            vi.mocked(Preferences.set).mockRejectedValue(new Error('Disk full'));
+
+            await expect(saveNotes([])).rejects.toThrow('Failed to save notes');
+        });
     });
 });
 
