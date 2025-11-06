@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { loadNotes, saveNotes, generateNoteId } from '../lib/storage';
+import { useStorage } from './useStorage';
+import { generateNoteId } from '../utils/id';
 import { Note, TextNote, AudioNote } from '../lib/types';
 
 interface UseNotesReturn {
@@ -22,13 +23,9 @@ export function useNotes(): UseNotesReturn {
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { loadNotes, saveNotes } = useStorage();
 
-    // Load notes on mount
-    useEffect(() => {
-        loadNotesFromStorage();
-    }, []);
-
-    const loadNotesFromStorage = async () => {
+    const loadNotesFromStorage = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -41,7 +38,12 @@ export function useNotes(): UseNotesReturn {
         } finally {
             setLoading(false);
         }
-    };
+    }, [loadNotes]);
+
+    // Load notes on mount
+    useEffect(() => {
+        loadNotesFromStorage();
+    }, [loadNotesFromStorage]);
 
     const createTextNote = useCallback(
         async (title: string, body: string): Promise<TextNote> => {
@@ -66,7 +68,7 @@ export function useNotes(): UseNotesReturn {
                 throw new Error(errorMessage);
             }
         },
-        [notes]
+        [notes, saveNotes]
     );
 
     const createAudioNote = useCallback(
@@ -93,7 +95,7 @@ export function useNotes(): UseNotesReturn {
                 throw new Error(errorMessage);
             }
         },
-        [notes]
+        [notes, saveNotes]
     );
 
     const updateNote = useCallback(
@@ -126,7 +128,7 @@ export function useNotes(): UseNotesReturn {
                 throw new Error(errorMessage);
             }
         },
-        [notes]
+        [notes, saveNotes]
     );
 
     const deleteNote = useCallback(
@@ -141,7 +143,7 @@ export function useNotes(): UseNotesReturn {
                 throw new Error(errorMessage);
             }
         },
-        [notes]
+        [notes, saveNotes]
     );
 
     const searchNotes = useCallback(

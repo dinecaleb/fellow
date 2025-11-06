@@ -20,9 +20,10 @@ Memo-rable is a mobile-first Capacitor application built with React, TypeScript,
 - **Build Tool**: Vite
 - **Mobile Wrapper**: Capacitor 5
 - **UI**: Tailwind CSS (mobile-friendly defaults)
-- **State Management**: React Hooks + Context (no Redux)
-- **Storage**: Capacitor Preferences API (JSON-based local persistence)
+- **State Management**: React Hooks (no Redux)
+- **Storage**: Capacitor Preferences API via `useStorage` hook
 - **Audio Recording**: `capacitor-voice-recorder` for native platforms, MediaRecorder API for web
+- **Audio Playback**: `@capacitor-community/native-audio` for native, HTML5 Audio for web
 - **Navigation**: React Router v6
 - **Testing**: Vitest + React Testing Library
 - **Linting**: ESLint + Prettier
@@ -31,21 +32,44 @@ Memo-rable is a mobile-first Capacitor application built with React, TypeScript,
 
 ```
 src/
-├── components/          # React components
-│   ├── NoteCard.tsx    # Note preview card for list view
-│   └── Recorder.tsx    # Audio recording component
-├── hooks/              # Custom React hooks
-│   ├── useNotes.ts     # Note management (CRUD, search)
-│   └── useRecorder.ts  # Audio recording functionality
-├── pages/              # Page components
-│   ├── Home.tsx        # Main list view with search
-│   ├── NoteView.tsx    # Single note view/editor
-│   └── NewNote.tsx     # Create new note (text or audio)
-├── lib/                # Core utilities
-│   ├── types.ts        # TypeScript type definitions
-│   └── storage.ts      # Local storage persistence
-├── App.tsx             # Main app with routing
-└── main.tsx            # Entry point
+├── __tests__/              # All tests centralized
+│   ├── setup.ts            # Test setup and mocks
+│   ├── hooks/              # Hook tests
+│   │   ├── useNotes.test.ts
+│   │   └── useStorage.test.ts
+│   ├── lib/                # Library tests
+│   │   └── types.test.ts
+│   └── utils/              # Utility tests
+│       └── id.test.ts
+├── components/             # React UI components only
+│   ├── audio/
+│   │   └── AudioPlayerUI.tsx
+│   ├── recorder/
+│   │   ├── AudioPreview.tsx
+│   │   └── RecordingControls.tsx
+│   ├── AudioPlayer.tsx     # Main audio player component
+│   ├── Recorder.tsx        # Main recorder component
+│   ├── NoteCard.tsx        # Note preview card for list view
+│   └── SplashScreen.tsx
+├── hooks/                  # All custom React hooks centralized
+│   ├── useAudioPlayer.ts   # Audio playback logic
+│   ├── useNotes.ts         # Note management (CRUD, search)
+│   ├── useRecorder.ts      # Audio recording functionality
+│   └── useStorage.ts       # Storage operations hook
+├── pages/                  # Page components (routes)
+│   ├── Home.tsx            # Main list view with search
+│   ├── NoteView.tsx        # Single note view/editor
+│   └── NewNote.tsx         # Create new note (text or audio)
+├── lib/                    # Core type definitions
+│   └── types.ts            # TypeScript type definitions
+└── utils/                  # All utilities centralized
+    ├── id.ts               # ID generation utilities
+    └── audio/              # Audio-related utilities
+        ├── audioUtils.ts           # Formatting, waveform generation
+        ├── audioUrlLoader.ts      # Audio URL creation from base64
+        ├── formatUtils.ts         # Duration formatting
+        ├── html5AudioLoader.ts    # Web platform audio loading
+        └── nativeAudioLoader.ts   # Native platform audio loading
 ```
 
 ## Getting Started
@@ -124,7 +148,29 @@ This will:
 
 2. In Android Studio, select your target device/emulator and run the app.
 
-## Testing
+## Development
+
+### Code Quality
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+Format code:
+
+```bash
+npm run format
+```
+
+Check formatting:
+
+```bash
+npm run format:check
+```
+
+### Testing
 
 Run tests:
 
@@ -146,22 +192,41 @@ npm run test:coverage
 
 ### Test Coverage
 
-The project includes basic Vitest tests for:
+The project includes tests for:
 
-- Storage utilities (load/save notes, generate IDs)
-- useNotes hook (create, search, delete operations)
+- Storage hook (`useStorage`) - load/save operations
+- Notes hook (`useNotes`) - CRUD and search operations
+- ID generation utilities
+- Type definitions
 
 ## Architecture & Trade-offs
 
+### Code Organization
+
+**Centralized Structure:**
+
+- **Hooks**: All custom hooks in `src/hooks/`
+- **Utils**: All utility functions in `src/utils/`
+- **Tests**: All tests in `src/__tests__/` organized by feature area
+- **Components**: UI components only, no business logic
+
+**Benefits:**
+
+- Easy to find and reuse code
+- Clear separation of concerns
+- Consistent import paths
+- Easier to maintain and test
+
 ### Storage Strategy
 
-**Current**: Capacitor Preferences API (key-value storage with JSON serialization)
+**Current**: Capacitor Preferences API via `useStorage` hook
 
 **Pros**:
 
 - Simple API
 - Works across all platforms
 - No additional dependencies
+- Storage operations provided as React hooks
 
 **Cons**:
 
@@ -195,9 +260,23 @@ The project includes basic Vitest tests for:
 - Web platform has limited background recording support
 - File paths differ between native and web
 
+### Audio Playback
+
+**Native Platforms**:
+
+- Uses `@capacitor-community/native-audio` plugin
+- Reliable playback on iOS/Android
+- Supports pause/resume
+
+**Web Platform**:
+
+- Uses HTML5 Audio API
+- Handles blob URLs and data URLs
+- Error handling for false-positive errors
+
 ### State Management
 
-**Current**: React Hooks + Context (no Redux)
+**Current**: React Hooks (no Redux)
 
 **Rationale**:
 
@@ -231,9 +310,9 @@ The project includes basic Vitest tests for:
 Audio files are stored in Capacitor's Data directory:
 
 - **Native**: `file://` URLs pointing to app's data directory
-- **Web**: Data URLs (base64 encoded)
+- **Web**: Data URLs (base64 encoded) or blob URLs
 
-When loading audio for playback, the app handles both formats automatically.
+When loading audio for playback, the app handles both formats automatically through platform-specific loaders.
 
 ### Background Recording
 
@@ -249,6 +328,12 @@ The app includes safe area utilities for iOS devices with notches:
 - `.pt-safe` - Top safe area padding
 - `.pb-safe` - Bottom safe area padding
 - Defined in `src/index.css`
+
+### Import Paths
+
+- **Hooks**: `import { useNotes } from '../hooks/useNotes'`
+- **Utils**: `import { generateId } from '../utils/id'`
+- **Components**: `import { AudioPlayer } from '../components/AudioPlayer'`
 
 ## Known Limitations
 
@@ -273,6 +358,10 @@ The app includes safe area utilities for iOS devices with notches:
 - [ ] Note sharing
 - [ ] SQLite migration for better performance
 - [ ] Pagination for large note lists
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and code style.
 
 ## License
 

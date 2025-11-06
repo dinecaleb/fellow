@@ -4,21 +4,32 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useNotes } from './useNotes';
-import * as storage from '../lib/storage';
-import { TextNote } from '../lib/types';
+import { useNotes } from '../../hooks/useNotes';
+import { useStorage } from '../../hooks/useStorage';
+import { TextNote } from '../../lib/types';
 
-// Mock storage module
-vi.mock('../lib/storage', () => ({
-    loadNotes: vi.fn(),
-    saveNotes: vi.fn(),
+// Mock useStorage hook
+vi.mock('../../hooks/useStorage', () => ({
+    useStorage: vi.fn(),
+}));
+
+// Mock ID generation
+vi.mock('../../utils/id', () => ({
+    generateId: vi.fn(() => `test-id-${Date.now()}`),
     generateNoteId: vi.fn(() => `test-id-${Date.now()}`),
 }));
 
 describe('useNotes', () => {
+    const mockLoadNotes = vi.fn();
+    const mockSaveNotes = vi.fn();
+
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.mocked(storage.loadNotes).mockResolvedValue([]);
+        vi.mocked(useStorage).mockReturnValue({
+            loadNotes: mockLoadNotes,
+            saveNotes: mockSaveNotes,
+        });
+        mockLoadNotes.mockResolvedValue([]);
     });
 
     it('should load notes on mount', async () => {
@@ -33,7 +44,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -42,7 +53,7 @@ describe('useNotes', () => {
         });
 
         expect(result.current.notes).toEqual(mockNotes);
-        expect(storage.loadNotes).toHaveBeenCalled();
+        expect(mockLoadNotes).toHaveBeenCalled();
     });
 
     it('should create text note', async () => {
@@ -52,13 +63,13 @@ describe('useNotes', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockSaveNotes.mockResolvedValue(undefined);
 
         await act(async () => {
             await result.current.createTextNote('New Note', 'Note body');
         });
 
-        expect(storage.saveNotes).toHaveBeenCalled();
+        expect(mockSaveNotes).toHaveBeenCalled();
         expect(result.current.notes.length).toBe(1);
         expect(result.current.notes[0].type).toBe('text');
         expect(result.current.notes[0].title).toBe('New Note');
@@ -71,13 +82,13 @@ describe('useNotes', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockSaveNotes.mockResolvedValue(undefined);
 
         await act(async () => {
             await result.current.createAudioNote('Audio Note', '/path/to/audio.m4a', 120);
         });
 
-        expect(storage.saveNotes).toHaveBeenCalled();
+        expect(mockSaveNotes).toHaveBeenCalled();
         expect(result.current.notes.length).toBe(1);
         expect(result.current.notes[0].type).toBe('audio');
         expect(result.current.notes[0].title).toBe('Audio Note');
@@ -103,7 +114,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -137,7 +148,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -171,8 +182,8 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockLoadNotes.mockResolvedValue(mockNotes);
+        mockSaveNotes.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useNotes());
 
@@ -200,8 +211,8 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockLoadNotes.mockResolvedValue(mockNotes);
+        mockSaveNotes.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useNotes());
 
@@ -223,8 +234,8 @@ describe('useNotes', () => {
     });
 
     it('should handle update of non-existent note', async () => {
-        vi.mocked(storage.loadNotes).mockResolvedValue([]);
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockLoadNotes.mockResolvedValue([]);
+        mockSaveNotes.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useNotes());
 
@@ -246,7 +257,7 @@ describe('useNotes', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockSaveNotes.mockResolvedValue(undefined);
 
         await act(async () => {
             await result.current.createTextNote('   ', 'Body content');
@@ -263,7 +274,7 @@ describe('useNotes', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockSaveNotes.mockResolvedValue(undefined);
 
         await act(async () => {
             await result.current.createAudioNote('   ', '/path/to/audio.m4a', 120);
@@ -284,7 +295,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -311,7 +322,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -336,7 +347,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 
@@ -349,7 +360,7 @@ describe('useNotes', () => {
     });
 
     it('should handle storage load error', async () => {
-        vi.mocked(storage.loadNotes).mockRejectedValue(new Error('Storage error'));
+        mockLoadNotes.mockRejectedValue(new Error('Storage error'));
 
         const { result } = renderHook(() => useNotes());
 
@@ -368,7 +379,7 @@ describe('useNotes', () => {
             expect(result.current.loading).toBe(false);
         });
 
-        vi.mocked(storage.saveNotes).mockRejectedValue(new Error('Save failed'));
+        mockSaveNotes.mockRejectedValue(new Error('Save failed'));
 
         await act(async () => {
             await expect(
@@ -391,8 +402,8 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
-        vi.mocked(storage.saveNotes).mockRejectedValue(new Error('Update failed'));
+        mockLoadNotes.mockResolvedValue(mockNotes);
+        mockSaveNotes.mockRejectedValue(new Error('Update failed'));
 
         const { result } = renderHook(() => useNotes());
 
@@ -421,8 +432,8 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
-        vi.mocked(storage.saveNotes).mockRejectedValue(new Error('Delete failed'));
+        mockLoadNotes.mockResolvedValue(mockNotes);
+        mockSaveNotes.mockRejectedValue(new Error('Delete failed'));
 
         const { result } = renderHook(() => useNotes());
 
@@ -457,8 +468,8 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
-        vi.mocked(storage.saveNotes).mockResolvedValue();
+        mockLoadNotes.mockResolvedValue(mockNotes);
+        mockSaveNotes.mockResolvedValue(undefined);
 
         const { result } = renderHook(() => useNotes());
 
@@ -496,7 +507,7 @@ describe('useNotes', () => {
             },
         ];
 
-        vi.mocked(storage.loadNotes).mockResolvedValue(mockNotes);
+        mockLoadNotes.mockResolvedValue(mockNotes);
 
         const { result } = renderHook(() => useNotes());
 

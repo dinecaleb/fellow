@@ -1,5 +1,12 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { webcrypto } from 'node:crypto'
+
+// Polyfill crypto for Node.js
+if (typeof globalThis.crypto === 'undefined') {
+    globalThis.crypto = webcrypto as Crypto;
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,9 +26,10 @@ export default defineConfig({
             },
         },
     },
+    // @ts-expect-error - vitest types extend vite config
     test: {
         globals: true,
         environment: 'jsdom',
-        setupFiles: './src/test/setup.ts',
+        setupFiles: './src/__tests__/setup.ts',
     },
 })

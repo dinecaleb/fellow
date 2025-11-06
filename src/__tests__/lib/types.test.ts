@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { TextNote, AudioNote, Note } from './types';
+import { TextNote, AudioNote, Note } from '../../lib/types';
 
 describe('Type Definitions', () => {
     describe('TextNote', () => {
