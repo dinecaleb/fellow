@@ -42,7 +42,7 @@ export function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="  flex flex-col h-screen bg-gray-50 overflow-hidden">
       {/* Fixed Header */}
       <div className="bg-white border-b border-gray-200 pt-safe px-4 py-4 flex-shrink-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Memo-rable</h1>

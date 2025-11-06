@@ -48,34 +48,42 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
         mimeType = "audio/mp4"; // M4A files are MP4 containers with AAC codec
       }
 
-      // Convert base64 to Blob and create blob URL (iOS Safari WebView works better with blob URLs)
-      try {
-        // Convert base64 to binary
-        const binaryString = atob(cleanBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        // Create Blob with correct MIME type
-        const blob = new Blob([bytes], { type: mimeType });
-        const blobUrl = URL.createObjectURL(blob);
-
-        console.log(
-          "[RECORDER] Blob URL created:",
-          blobUrl.substring(0, 50) + "..."
-        );
-        console.log("[RECORDER] Blob size:", blob.size, "bytes");
-        console.log("[RECORDER] Plugin MIME type:", recordingMimeType);
-        console.log("[RECORDER] Using HTML5-compatible MIME type:", mimeType);
-
-        setAudioUrl(blobUrl);
-      } catch (blobErr) {
-        console.error("[RECORDER] Error creating blob URL:", blobErr);
-        // Fallback to data URL
+      // For iOS, use data URLs directly (more reliable than blob URLs in WebView)
+      const isIOS = Capacitor.getPlatform() === "ios";
+      if (isIOS) {
         const dataUrl = `data:${mimeType};base64,${cleanBase64}`;
-        console.log("[RECORDER] Falling back to data URL");
+        console.log("[RECORDER] iOS: Using data URL for audio playback");
         setAudioUrl(dataUrl);
+      } else {
+        // For Android and web, try blob URL first, fallback to data URL
+        try {
+          // Convert base64 to binary
+          const binaryString = atob(cleanBase64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+
+          // Create Blob with correct MIME type
+          const blob = new Blob([bytes], { type: mimeType });
+          const blobUrl = URL.createObjectURL(blob);
+
+          console.log(
+            "[RECORDER] Blob URL created:",
+            blobUrl.substring(0, 50) + "..."
+          );
+          console.log("[RECORDER] Blob size:", blob.size, "bytes");
+          console.log("[RECORDER] Plugin MIME type:", recordingMimeType);
+          console.log("[RECORDER] Using HTML5-compatible MIME type:", mimeType);
+
+          setAudioUrl(blobUrl);
+        } catch (blobErr) {
+          console.error("[RECORDER] Error creating blob URL:", blobErr);
+          // Fallback to data URL
+          const dataUrl = `data:${mimeType};base64,${cleanBase64}`;
+          console.log("[RECORDER] Falling back to data URL");
+          setAudioUrl(dataUrl);
+        }
       }
     }
   }, [recordingBase64, recordingMimeType, isRecording]);
@@ -255,13 +263,6 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
                     src={audioUrl}
                     duration={duration}
                     onError={(error) => setAudioError(error)}
-                    platform={
-                      Capacitor.isNativePlatform()
-                        ? Capacitor.getPlatform() === "ios"
-                          ? "ios"
-                          : "android"
-                        : "web"
-                    }
                     fileName={recordingFileName || undefined}
                   />
                 ) : !audioError ? (

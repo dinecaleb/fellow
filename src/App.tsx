@@ -10,6 +10,17 @@ import { VoiceRecorder } from "capacitor-voice-recorder";
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
+  // Add platform class to body for conditional styling
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      document.body.classList.add("is-native");
+      document.body.classList.remove("is-web");
+    } else {
+      document.body.classList.add("is-web");
+      document.body.classList.remove("is-native");
+    }
+  }, []);
+
   // Request microphone permission automatically when app loads
   useEffect(() => {
     const requestMicrophonePermission = async () => {

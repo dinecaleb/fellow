@@ -2,7 +2,7 @@
  * NoteView page - displays a single note (text or audio) with options to edit/delete
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
 import { Note } from "../lib/types";
@@ -17,194 +17,179 @@ export function NoteView() {
   const [note, setNote] = useState<Note | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const lastAudioPathRef = useRef<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
 
-  useEffect(() => {
+  // Memoize the current note to prevent unnecessary reloads
+  const currentNote = useMemo(() => {
     if (id && notes.length > 0) {
-      const foundNote = notes.find((n) => n.id === id);
-      if (foundNote) {
-        setNote(foundNote);
-        setEditTitle(foundNote.title);
-        if (foundNote.type === "text") {
-          setEditBody(foundNote.body);
-        }
+      return notes.find((n) => n.id === id) || null;
+    }
+    return null;
+  }, [id, notes]);
 
-        // Load audio for audio notes
-        if (foundNote.type === "audio") {
-          loadAudioUrl(foundNote.audioPath);
-        }
+  // Update note state when currentNote changes
+  useEffect(() => {
+    if (currentNote) {
+      setNote(currentNote);
+      setEditTitle(currentNote.title);
+      if (currentNote.type === "text") {
+        setEditBody(currentNote.body);
       }
     }
-
-    // Cleanup object URLs on unmount
-    return () => {
-      if (audioUrl && audioUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
-  }, [id, notes, audioUrl]);
+  }, [currentNote]);
 
   /**
    * Load audio file for playback
    * path should be just the filename (not full path)
    * Uses Capacitor.convertFileSrc for native platforms
    */
-  const loadAudioUrl = async (fileName: string) => {
-    try {
-      console.log("[NOTEVIEW] Loading audio file:", fileName);
-      console.log(
-        "[NOTEVIEW] Platform:",
-        Capacitor.isNativePlatform() ? "Native" : "Web"
-      );
-
-      if (Capacitor.isNativePlatform()) {
-        // Native: Read file and create data URL (capacitor:// URLs don't work with HTML5 audio on iOS)
-        console.log("[NOTEVIEW] Reading native file for data URL...");
-        const result = await Filesystem.readFile({
-          path: fileName,
-          directory: Directory.Data,
-        });
-
-        console.log("[NOTEVIEW] File read, data type:", typeof result.data);
-
-        // Verify file exists
-        try {
-          const stat = await Filesystem.stat({
+  const loadAudioUrl = useCallback(
+    async (fileName: string, mimeTypeFromNote?: string) => {
+      try {
+        if (Capacitor.isNativePlatform()) {
+          // Native: Read file and create data URL
+          const result = await Filesystem.readFile({
             path: fileName,
             directory: Directory.Data,
           });
-          console.log("[NOTEVIEW] File exists, size:", stat.size, "bytes");
-        } catch (statErr) {
-          console.error("[NOTEVIEW] File stat error:", statErr);
-        }
 
-        // Get base64 data
-        let base64Data = typeof result.data === "string" ? result.data : "";
-        if (base64Data.includes(",")) {
-          base64Data = base64Data.split(",")[1];
-        }
+          // Get base64 data
+          let base64Data = typeof result.data === "string" ? result.data : "";
+          if (base64Data.includes(",")) {
+            base64Data = base64Data.split(",")[1];
+          }
 
-        // Remove any leading slashes or invalid characters (some plugins return base64 with // prefix)
-        // Also remove any whitespace
-        base64Data = base64Data.replace(/^\/+/, "").trim();
+          // Remove any leading slashes or invalid characters
+          base64Data = base64Data.replace(/^\/+/, "").trim();
 
-        // Validate base64 string
-        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
-          console.error("[NOTEVIEW] Invalid base64 string detected");
-          throw new Error("Invalid base64 audio data");
-        }
+          // Validate base64 string
+          if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
+            throw new Error("Invalid base64 audio data");
+          }
 
-        // Convert plugin MIME type to HTML5-compatible MIME type
-        // iOS returns 'audio/aac' but M4A files are MP4 containers, so use audio/mp4
-        let mimeType: string;
-        if (note && note.type === "audio" && note.mimeType) {
-          const pluginMimeType = note.mimeType;
-          // Convert audio/aac to audio/mp4 for M4A files (they're MP4 containers)
-          if (
-            pluginMimeType === "audio/aac" ||
-            pluginMimeType.includes("aac") ||
-            fileName.endsWith(".m4a")
-          ) {
-            mimeType = "audio/mp4";
-          } else if (pluginMimeType.includes("webm")) {
-            mimeType = "audio/webm";
-          } else if (pluginMimeType.includes("ogg")) {
-            mimeType = "audio/ogg";
+          // Convert plugin MIME type to HTML5-compatible MIME type
+          let mimeType: string;
+          if (mimeTypeFromNote) {
+            const pluginMimeType = mimeTypeFromNote;
+            if (
+              pluginMimeType === "audio/aac" ||
+              pluginMimeType.includes("aac") ||
+              fileName.endsWith(".m4a")
+            ) {
+              mimeType = "audio/mp4";
+            } else if (pluginMimeType.includes("webm")) {
+              mimeType = "audio/webm";
+            } else if (pluginMimeType.includes("ogg")) {
+              mimeType = "audio/ogg";
+            } else {
+              mimeType = pluginMimeType;
+            }
           } else {
-            mimeType = pluginMimeType;
+            // Fallback: guess from filename
+            if (fileName.endsWith(".m4a")) {
+              mimeType = "audio/mp4";
+            } else if (fileName.endsWith(".mp4")) {
+              mimeType = "audio/mp4";
+            } else if (fileName.endsWith(".webm")) {
+              mimeType = "audio/webm";
+            } else if (fileName.endsWith(".ogg")) {
+              mimeType = "audio/ogg";
+            } else {
+              mimeType = "audio/mp4";
+            }
+          }
+
+          // For iOS, use data URLs directly (more reliable than blob URLs in WebView)
+          const isIOS = Capacitor.getPlatform() === "ios";
+          if (isIOS) {
+            const dataUrl = `data:${mimeType};base64,${base64Data}`;
+            console.log("[NOTEVIEW] iOS: Using data URL for audio playback");
+            setAudioUrl(dataUrl);
+          } else {
+            // For Android and web, try blob URL first, fallback to data URL
+            try {
+              // Convert base64 to binary
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+
+              // Create Blob with correct MIME type
+              const blob = new Blob([bytes], { type: mimeType });
+              const blobUrl = URL.createObjectURL(blob);
+
+              console.log(
+                "[NOTEVIEW] Blob URL created:",
+                blobUrl.substring(0, 50) + "..."
+              );
+              console.log("[NOTEVIEW] Blob size:", blob.size, "bytes");
+              console.log("[NOTEVIEW] Blob MIME type:", mimeType);
+
+              setAudioUrl(blobUrl);
+            } catch (blobErr) {
+              console.error("[NOTEVIEW] Error creating blob URL:", blobErr);
+              // Fallback to data URL
+              const dataUrl = `data:${mimeType};base64,${base64Data}`;
+              console.log("[NOTEVIEW] Falling back to data URL");
+              setAudioUrl(dataUrl);
+            }
           }
         } else {
-          // Fallback: guess from filename
-          if (fileName.endsWith(".m4a")) {
-            mimeType = "audio/mp4"; // M4A is MP4 container
-          } else if (fileName.endsWith(".mp4")) {
-            mimeType = "audio/mp4";
-          } else if (fileName.endsWith(".webm")) {
-            mimeType = "audio/webm";
-          } else if (fileName.endsWith(".ogg")) {
-            mimeType = "audio/ogg";
+          // Web: Read file as Blob or base64
+          const result = await Filesystem.readFile({
+            path: fileName,
+            directory: Directory.Data,
+          });
+
+          if (result.data instanceof Blob) {
+            const objectUrl = URL.createObjectURL(result.data);
+            setAudioUrl(objectUrl);
           } else {
-            mimeType = "audio/mp4"; // Default to mp4 for iOS
+            const base64Data =
+              typeof result.data === "string" ? result.data : "";
+            const cleanBase64 = base64Data.includes(",")
+              ? base64Data.split(",")[1]
+              : base64Data;
+
+            let mimeType = "audio/mp4";
+            if (fileName.endsWith(".m4a") || fileName.endsWith(".mp4")) {
+              mimeType = "audio/mp4";
+            } else if (fileName.endsWith(".webm")) {
+              mimeType = "audio/webm";
+            } else if (fileName.endsWith(".ogg")) {
+              mimeType = "audio/ogg";
+            }
+
+            const dataUrl = `data:${mimeType};base64,${cleanBase64}`;
+            setAudioUrl(dataUrl);
           }
         }
-
-        console.log(
-          "[NOTEVIEW] Plugin MIME type:",
-          note && note.type === "audio" ? note.mimeType : "unknown"
-        );
-        console.log("[NOTEVIEW] Using HTML5-compatible MIME type:", mimeType);
-        console.log("[NOTEVIEW] Base64 data length:", base64Data.length);
-
-        // Convert base64 to Blob and create blob URL (iOS Safari WebView works better with blob URLs)
-        try {
-          // Convert base64 to binary
-          const binaryString = atob(base64Data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-
-          // Create Blob with correct MIME type
-          const blob = new Blob([bytes], { type: mimeType });
-          const blobUrl = URL.createObjectURL(blob);
-
-          console.log(
-            "[NOTEVIEW] Blob URL created:",
-            blobUrl.substring(0, 50) + "..."
-          );
-          console.log("[NOTEVIEW] Blob size:", blob.size, "bytes");
-          console.log("[NOTEVIEW] Blob MIME type:", mimeType);
-
-          setAudioUrl(blobUrl);
-        } catch (blobErr) {
-          console.error("[NOTEVIEW] Error creating blob URL:", blobErr);
-          // Fallback to data URL
-          const dataUrl = `data:${mimeType};base64,${base64Data}`;
-          console.log("[NOTEVIEW] Falling back to data URL");
-          setAudioUrl(dataUrl);
-        }
-      } else {
-        // Web: Read file as Blob or base64
-        const result = await Filesystem.readFile({
-          path: fileName,
-          directory: Directory.Data,
-        });
-
-        if (result.data instanceof Blob) {
-          // Modern browsers return Blob
-          const objectUrl = URL.createObjectURL(result.data);
-          setAudioUrl(objectUrl);
-        } else {
-          // Fallback: base64 string
-          const base64Data = typeof result.data === "string" ? result.data : "";
-          const cleanBase64 = base64Data.includes(",")
-            ? base64Data.split(",")[1]
-            : base64Data;
-
-          // Determine MIME type
-          let mimeType = "audio/mp4";
-          if (fileName.endsWith(".m4a") || fileName.endsWith(".mp4")) {
-            mimeType = "audio/mp4";
-          } else if (fileName.endsWith(".webm")) {
-            mimeType = "audio/webm";
-          } else if (fileName.endsWith(".ogg")) {
-            mimeType = "audio/ogg";
-          }
-
-          const dataUrl = `data:${mimeType};base64,${cleanBase64}`;
-          setAudioUrl(dataUrl);
-        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setAudioError(`Failed to load audio file: ${errorMessage}`);
+        setAudioUrl(null);
       }
-    } catch (err) {
-      console.error("[NOTEVIEW] Error loading audio:", err);
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("[NOTEVIEW] Error details:", errorMessage);
-      setAudioError(`Failed to load audio file: ${errorMessage}`);
-      setAudioUrl(null);
+    },
+    []
+  );
+
+  // Extract audio-specific values to prevent unnecessary reloads
+  const noteAudioPath =
+    currentNote && currentNote.type === "audio" ? currentNote.audioPath : null;
+  const noteMimeType =
+    currentNote && currentNote.type === "audio" ? currentNote.mimeType : null;
+
+  // Load audio only when audioPath changes (not when title changes)
+  useEffect(() => {
+    if (noteAudioPath && noteAudioPath !== lastAudioPathRef.current) {
+      lastAudioPathRef.current = noteAudioPath;
+      loadAudioUrl(noteAudioPath, noteMimeType || undefined);
     }
-  };
+  }, [noteAudioPath, noteMimeType, loadAudioUrl]);
 
   // Cleanup blob URLs on unmount
   useEffect(() => {
@@ -398,16 +383,13 @@ export function NoteView() {
             {audioUrl ? (
               <AudioPlayer
                 src={audioUrl}
-                duration={note.duration}
-                onError={(error) => setAudioError(error)}
-                platform={
-                  Capacitor.isNativePlatform()
-                    ? Capacitor.getPlatform() === "ios"
-                      ? "ios"
-                      : "android"
-                    : "web"
+                duration={
+                  currentNote && currentNote.type === "audio"
+                    ? currentNote.duration
+                    : undefined
                 }
-                fileName={note.type === "audio" ? note.audioPath : undefined}
+                onError={(error) => setAudioError(error)}
+                fileName={noteAudioPath || undefined}
               />
             ) : !audioError ? (
               <div className="text-center py-8 text-gray-500">

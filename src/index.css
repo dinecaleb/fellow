@@ -11,6 +11,11 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Only apply padding-top on web browsers, not native apps */
+body.is-web {
+    padding-top: 30px;
+}
+
 #root {
     min-height: 100vh;
 }
