@@ -6,8 +6,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Capacitor } from "@capacitor/core";
 import { NativeAudio } from "@capacitor-community/native-audio";
-import { loadHTML5Audio } from "../utils/audio/html5AudioLoader.js";
-import { loadNativeAudio } from "../utils/audio/nativeAudioLoader.js";
+import { loadHTML5Audio } from "../utils/audio/html5AudioLoader";
+import { loadNativeAudio } from "../utils/audio/nativeAudioLoader";
 
 export interface UseAudioPlayerProps {
     src: string;
