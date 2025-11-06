@@ -2,7 +2,7 @@
  * NoteCard component - displays a preview of a note in the list
  */
 
-import { Note } from "../lib/types";
+import { Note } from "../../lib/types";
 
 interface NoteCardProps {
   note: Note;

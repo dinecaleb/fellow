@@ -5,7 +5,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
-import { NoteCard } from "../components/NoteCard";
+import { NoteCard } from "../components/note/NoteCard";
 import { Note } from "../lib/types";
 
 export function Home() {
