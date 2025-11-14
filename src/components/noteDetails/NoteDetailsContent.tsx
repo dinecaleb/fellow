@@ -23,7 +23,6 @@ function NoteDetailsContentComponent({
   audioError,
   duration,
   audioPath,
-  title,
   onAudioError,
 }: NoteDetailsContentProps) {
   return (
@@ -50,7 +49,6 @@ function NoteDetailsContentComponent({
                 duration={duration}
                 onError={onAudioError}
                 fileName={audioPath}
-                title={title}
               />
             </div>
           ) : !audioError ? (
