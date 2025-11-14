@@ -6,11 +6,11 @@
  */
 
 import { useState, useEffect } from "react";
-import { useRecorder } from "../hooks/useRecorder";
-import { AudioNote } from "../lib/types";
+import { useRecorder } from "../../hooks/useRecorder";
+import { AudioNote } from "../../lib/types";
 import { RecordingControls } from "./recorder/RecordingControls";
 import { AudioPreview } from "./recorder/AudioPreview";
-import { createAudioUrlFromBase64 } from "../utils/audio/audioUrlLoader";
+import { createAudioUrlFromBase64 } from "../../utils/audio/audioUrlLoader";
 
 interface RecorderProps {
   /** Callback when recording is saved */

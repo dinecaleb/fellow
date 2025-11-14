@@ -1,5 +1,5 @@
 /**
- * NoteView page - displays a single note (text or audio) with options to edit/delete
+ * NoteDetails page - displays a single note (text or audio) with options to edit/delete
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
@@ -7,10 +7,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
 import { Note } from "../lib/types";
 import { useAudioUrlLoader } from "../hooks/useAudioUrlLoader";
-import { NoteViewHeader } from "../components/note/NoteViewHeader";
-import { NoteViewContent } from "../components/note/NoteViewContent";
+import { NoteDetailsHeader } from "../components/noteDetails/NoteDetailsHeader";
+import { NoteDetailsContent } from "../components/noteDetails/NoteDetailsContent";
 
-export function NoteView() {
+export function NoteDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { notes, loading, deleteNote, updateNote } = useNotes();
@@ -144,7 +144,7 @@ export function NoteView() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-safe">
-      <NoteViewHeader
+      <NoteDetailsHeader
         note={note}
         isEditing={isEditing}
         editTitle={editTitle}
@@ -158,7 +158,7 @@ export function NoteView() {
         onBack={() => navigate("/")}
       />
 
-      <NoteViewContent
+      <NoteDetailsContent
         noteType={note.type}
         noteBody={note.type === "text" ? note.body : undefined}
         audioUrl={audioUrl}

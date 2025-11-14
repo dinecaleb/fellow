@@ -3,7 +3,7 @@
  * Displays recording controls (start, pause, resume, stop)
  */
 
-import { formatDuration } from "../../utils/audio/formatUtils";
+import { formatDuration } from "../../../utils/audio/formatUtils";
 
 interface RecordingControlsProps {
   isRecording: boolean;

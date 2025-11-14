@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Home } from "./pages/Home";
-import { NoteView } from "./pages/NoteView";
+import { NoteDetails } from "./pages/NoteDetails";
 import { NewNote } from "./pages/NewNote";
-import { SplashScreen } from "./components/SplashScreen";
+import { SplashScreen } from "./components/shared/SplashScreen";
 import { Capacitor } from "@capacitor/core";
 import { VoiceRecorder } from "capacitor-voice-recorder";
 
@@ -70,8 +70,8 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/note/:id" element={<NoteView />} />
         <Route path="/new/:type" element={<NewNote />} />
+        <Route path="/note/:id" element={<NoteDetails />} />
       </Routes>
     </div>
   );

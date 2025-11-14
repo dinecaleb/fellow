@@ -30,19 +30,27 @@ src/
 │   ├── hooks/              # Hook tests
 │   ├── lib/                # Library tests
 │   └── utils/              # Utility tests
-├── components/             # React UI components only
-│   ├── audio/
-│   │   └── AudioPlayerUI.tsx
-│   ├── note/
-│   │   ├── NoteCard.tsx        # Note preview card for list view
-│   │   ├── NoteViewHeader.tsx  # Note view header with edit controls
-│   │   └── NoteViewContent.tsx # Note content display (text/audio)
-│   ├── recorder/
-│   │   ├── AudioPreview.tsx
-│   │   └── RecordingControls.tsx
-│   ├── AudioPlayer.tsx     # Main audio player component
-│   ├── Recorder.tsx        # Main recorder component
-│   └── SplashScreen.tsx
+├── components/             # React UI components organized by page
+│   ├── shared/            # Components used across multiple pages
+│   │   ├── SplashScreen.tsx
+│   │   ├── AudioPlayer.tsx
+│   │   └── audio/
+│   │       └── AudioPlayerUI.tsx
+│   ├── home/              # Components for Home page
+│   │   ├── ActionButtons.tsx
+│   │   ├── NoteCard.tsx
+│   │   ├── NotesList.tsx
+│   │   └── SearchBar.tsx
+│   ├── newNote/            # Components for NewNote page
+│   │   ├── NewNoteHeader.tsx
+│   │   ├── TextNoteForm.tsx
+│   │   ├── Recorder.tsx
+│   │   └── recorder/
+│   │       ├── AudioPreview.tsx
+│   │       └── RecordingControls.tsx
+│   └── noteDetails/        # Components for NoteDetails page
+│       ├── NoteDetailsHeader.tsx
+│       └── NoteDetailsContent.tsx
 ├── hooks/                  # All custom React hooks centralized
 │   ├── useAudioPlayer.ts   # Audio playback logic
 │   ├── useAudioUrlLoader.ts # Audio URL loading from filesystem
@@ -51,8 +59,8 @@ src/
 │   └── useStorage.ts       # Storage operations hook
 ├── pages/                  # Page components (routes)
 │   ├── Home.tsx            # Main list view with search
-│   ├── NoteView.tsx        # Single note view/editor (orchestrates components)
-│   └── NewNote.tsx         # Create new note (text or audio)
+│   ├── NoteDetails.tsx    # Single note view/editor (orchestrates components)
+│   └── NewNote.tsx        # Create new note (text or audio)
 ├── lib/                    # Core type definitions
 │   └── types.ts            # TypeScript type definitions
 └── utils/                  # All utilities centralized
@@ -72,7 +80,7 @@ src/
 The audio player follows a modular architecture:
 
 ```
-components/
+components/shared/
 ├── AudioPlayer.tsx              # Main component (orchestration)
 └── audio/
     └── AudioPlayerUI.tsx        # UI component (presentation)
@@ -99,7 +107,7 @@ utils/audio/
 The recorder component is similarly modular:
 
 ```
-components/
+components/newNote/
 ├── Recorder.tsx                 # Main component (orchestration)
 └── recorder/
     ├── AudioPreview.tsx         # Audio preview component
@@ -123,28 +131,29 @@ Notes are managed through hooks:
 
 The hooks abstract away storage details, making it easy to swap storage backends in the future.
 
-### Note View Architecture
+### Note Details Architecture
 
-The `NoteView` page follows a modular architecture:
+The `NoteDetails` page follows a modular architecture:
 
 ```
 pages/
-└── NoteView.tsx              # Main orchestrator component
+└── NoteDetails.tsx              # Main orchestrator component
 
-components/note/
-├── NoteViewHeader.tsx        # Header with title, edit controls, actions
-└── NoteViewContent.tsx       # Content display (text or audio player)
+components/noteDetails/
+├── NoteDetailsHeader.tsx        # Header with title, edit controls, actions
+└── NoteDetailsContent.tsx       # Content display (text or audio player)
 
 hooks/
-└── useAudioUrlLoader.ts      # Audio file loading logic
+└── useAudioUrlLoader.ts         # Audio file loading logic
 ```
 
 **Benefits:**
 
 - Clear separation of concerns
 - Easy to test each component independently
-- Prevents unnecessary re-renders (NoteViewContent is memoized)
+- Prevents unnecessary re-renders (NoteDetailsContent is memoized)
 - Audio loading logic is reusable
+- Components organized by page for better maintainability
 
 ## State Management
 
@@ -209,11 +218,16 @@ The audio player module abstracts platform differences through:
 
 ### Component Structure
 
-1. **Single Responsibility**: Each module/function has one clear purpose
-2. **DRY (Don't Repeat Yourself)**: Extract common logic into utilities
-3. **Composition over Inheritance**: Use composition and hooks
-4. **Explicit over Implicit**: Clear naming and documentation
-5. **Small Functions**: Functions should be small and focused
+1. **Page-Based Organization**: Components organized by the page they belong to
+   - `shared/` - Components used across multiple pages
+   - `home/` - Components specific to Home page
+   - `newNote/` - Components specific to NewNote page
+   - `noteDetails/` - Components specific to NoteDetails page
+2. **Single Responsibility**: Each module/function has one clear purpose
+3. **DRY (Don't Repeat Yourself)**: Extract common logic into utilities
+4. **Composition over Inheritance**: Use composition and hooks
+5. **Explicit over Implicit**: Clear naming and documentation
+6. **Small Functions**: Functions should be small and focused
 
 ### File Naming
 
@@ -246,11 +260,10 @@ The audio player module abstracts platform differences through:
 - **Code Splitting**: Vite automatically splits code by route
 - **Lazy Loading**: Consider lazy loading for large components
 - **Memoization**: Use `useMemo` and `useCallback` appropriately
-  - `NoteViewContent` is memoized to prevent unnecessary re-renders
+  - `NoteDetailsContent` is memoized to prevent unnecessary re-renders
   - Handler functions are memoized with `useCallback`
 - **Component Memoization**: Key components use `React.memo` for performance
 - **Virtual Lists**: Consider for large note lists (future - see PERFORMANCE.md)
-
 
 ## Security
 

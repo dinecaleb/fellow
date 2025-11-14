@@ -5,7 +5,9 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
-import { Recorder } from "../components/Recorder";
+import { Recorder } from "../components/newNote/Recorder";
+import { NewNoteHeader } from "../components/newNote/NewNoteHeader";
+import { TextNoteForm } from "../components/newNote/TextNoteForm";
 import { AudioNote } from "../lib/types";
 
 export function NewNote() {
@@ -55,32 +57,7 @@ export function NewNote() {
   if (type === "audio") {
     return (
       <div className="h-screen flex flex-col bg-gray-50">
-        <div className="bg-white border-b border-gray-200 pt-safe px-4 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleCancel}
-              className="text-indigo-600 hover:text-indigo-700"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">
-              New Audio Note
-            </h1>
-            <div className="w-6"></div>
-          </div>
-        </div>
+        <NewNoteHeader title="New Audio Note" onCancel={handleCancel} />
         <Recorder onSave={handleSaveAudioNote} onCancel={handleCancel} />
       </div>
     );
@@ -89,27 +66,10 @@ export function NewNote() {
   return (
     <div className="min-h-screen bg-gray-50 pb-safe">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 pt-safe px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={handleCancel}
-            className="text-indigo-600 hover:text-indigo-700"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <h1 className="text-xl font-semibold text-gray-900">New Text Note</h1>
+      <NewNoteHeader
+        title="New Text Note"
+        onCancel={handleCancel}
+        rightElement={
           <button
             onClick={handleSaveTextNote}
             disabled={saving}
@@ -117,8 +77,8 @@ export function NewNote() {
           >
             {saving ? "Saving..." : "Save"}
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Error Message */}
       {error && (
@@ -128,26 +88,12 @@ export function NewNote() {
       )}
 
       {/* Form */}
-      <div className="px-4 py-6 space-y-4">
-        <div>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg font-medium"
-          />
-        </div>
-        <div>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Start writing..."
-            rows={15}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-          />
-        </div>
-      </div>
+      <TextNoteForm
+        title={title}
+        body={body}
+        onTitleChange={setTitle}
+        onBodyChange={setBody}
+      />
     </div>
   );
 }

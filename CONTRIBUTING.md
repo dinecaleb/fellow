@@ -34,20 +34,20 @@ Thank you for your interest in contributing to Memo-rable! This guide will help 
 
 ```
 src/
-├── components/          # React components
-│   ├── audio/         # Audio player module (split into hooks/utils/UI)
-│   ├── NoteCard.tsx   # Note preview card
-│   └── Recorder.tsx   # Audio recording component
+├── components/          # React components organized by page
+│   ├── shared/         # Shared components (SplashScreen, AudioPlayer)
+│   ├── home/           # Home page components
+│   ├── newNote/        # NewNote page components
+│   └── noteDetails/    # NoteDetails page components
 ├── hooks/              # Custom React hooks
 │   ├── useNotes.ts    # Note management
 │   └── useRecorder.ts # Audio recording logic
 ├── pages/              # Page components
 │   ├── Home.tsx       # Main list view
-│   ├── NoteView.tsx   # Single note view
+│   ├── NoteDetails.tsx # Single note view
 │   └── NewNote.tsx    # Create note page
 ├── lib/                # Core utilities
-│   ├── types.ts       # TypeScript types
-│   └── storage.ts     # Storage utilities
+│   └── types.ts       # TypeScript types
 └── utils/              # Shared utilities
 ```
 

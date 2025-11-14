@@ -6,7 +6,7 @@
  * @module AudioPlayer
  */
 
-import { useAudioPlayer } from "../hooks/useAudioPlayer";
+import { useAudioPlayer } from "../../hooks/useAudioPlayer";
 import { AudioPlayerUI } from "./audio/AudioPlayerUI";
 
 export interface AudioPlayerProps {

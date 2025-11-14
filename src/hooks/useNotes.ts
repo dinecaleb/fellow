@@ -23,7 +23,7 @@ export function useNotes(): UseNotesReturn {
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { loadNotes, saveNotes } = useStorage();
+    const { loadNotes, saveNotes } = useStorage(); ///storing locally
 
     const loadNotesFromStorage = useCallback(async () => {
         try {

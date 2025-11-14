@@ -5,9 +5,9 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotes } from "../hooks/useNotes";
-import { ActionButtons } from "../components/ActionButtons";
-import { NotesList } from "../components/NotesList";
-import { SearchBar } from "../components/SearchBar";
+import { ActionButtons } from "../components/home/ActionButtons";
+import { NotesList } from "../components/home/NotesList";
+import { SearchBar } from "../components/home/SearchBar";
 
 export function Home() {
   const navigate = useNavigate();

@@ -8,7 +8,7 @@ import {
   generateWaveform,
   calculateProgress,
   calculateFilledBars,
-} from "../../utils/audio/audioUtils";
+} from "../../../utils/audio/audioUtils";
 
 export interface AudioPlayerUIProps {
   isPlaying: boolean;

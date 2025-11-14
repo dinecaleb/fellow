@@ -3,7 +3,7 @@
  * Displays audio player preview after recording
  */
 
-import { AudioPlayer } from "../AudioPlayer";
+import { AudioPlayer } from "../../shared/AudioPlayer";
 
 interface AudioPreviewProps {
   audioUrl: string | null;

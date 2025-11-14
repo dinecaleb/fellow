@@ -1,10 +1,10 @@
 /**
- * NoteViewHeader component - header section with title, edit controls, and actions
+ * NoteDetailsHeader component - header section with title, edit controls, and actions
  */
 
 import { Note } from "../../lib/types";
 
-interface NoteViewHeaderProps {
+interface NoteDetailsHeaderProps {
   note: Note;
   isEditing: boolean;
   editTitle: string;
@@ -18,7 +18,7 @@ interface NoteViewHeaderProps {
   onBack: () => void;
 }
 
-export function NoteViewHeader({
+export function NoteDetailsHeader({
   note,
   isEditing,
   editTitle,
@@ -30,7 +30,7 @@ export function NoteViewHeader({
   onSave,
   onDelete,
   onBack,
-}: NoteViewHeaderProps) {
+}: NoteDetailsHeaderProps) {
   const formatDate = (timestamp: number): string => {
     return new Date(timestamp).toLocaleString();
   };

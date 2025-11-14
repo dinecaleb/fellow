@@ -2,8 +2,8 @@
  * NotesList component - displays a list of notes with empty state
  */
 
-import { Note } from "../lib/types";
-import { NoteCard } from "./note/NoteCard";
+import { Note } from "../../lib/types";
+import { NoteCard } from "./NoteCard";
 
 interface NotesListProps {
   notes: Note[];

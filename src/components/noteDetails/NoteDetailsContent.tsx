@@ -1,11 +1,11 @@
 /**
- * NoteViewContent component - displays note content (text or audio)
+ * NoteDetailsContent component - displays note content (text or audio)
  */
 
 import { memo } from "react";
-import { AudioPlayer } from "../AudioPlayer";
+import { AudioPlayer } from "../shared/AudioPlayer";
 
-interface NoteViewContentProps {
+interface NoteDetailsContentProps {
   noteType: "text" | "audio";
   noteBody?: string;
   audioUrl: string | null;
@@ -16,7 +16,7 @@ interface NoteViewContentProps {
   onAudioError: (error: string) => void;
 }
 
-function NoteViewContentComponent({
+function NoteDetailsContentComponent({
   noteType,
   noteBody,
   audioUrl,
@@ -25,7 +25,7 @@ function NoteViewContentComponent({
   audioPath,
   title,
   onAudioError,
-}: NoteViewContentProps) {
+}: NoteDetailsContentProps) {
   return (
     <div className="px-4 py-6">
       {noteType === "text" ? (
@@ -64,4 +64,4 @@ function NoteViewContentComponent({
 }
 
 // Memoize to prevent re-renders when audio props haven't changed
-export const NoteViewContent = memo(NoteViewContentComponent);
+export const NoteDetailsContent = memo(NoteDetailsContentComponent);

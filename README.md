@@ -55,19 +55,27 @@ src/
 │   │   └── types.test.ts
 │   └── utils/              # Utility tests
 │       └── id.test.ts
-├── components/             # React UI components only
-│   ├── audio/
-│   │   └── AudioPlayerUI.tsx
-│   ├── note/
-│   │   ├── NoteCard.tsx        # Note preview card for list view
-│   │   ├── NoteViewHeader.tsx  # Note view header with edit controls
-│   │   └── NoteViewContent.tsx # Note content display (text/audio)
-│   ├── recorder/
-│   │   ├── AudioPreview.tsx
-│   │   └── RecordingControls.tsx
-│   ├── AudioPlayer.tsx     # Main audio player component
-│   ├── Recorder.tsx        # Main recorder component
-│   └── SplashScreen.tsx
+├── components/             # React UI components organized by page
+│   ├── shared/            # Components used across multiple pages
+│   │   ├── SplashScreen.tsx
+│   │   ├── AudioPlayer.tsx
+│   │   └── audio/
+│   │       └── AudioPlayerUI.tsx
+│   ├── home/              # Components for Home page
+│   │   ├── ActionButtons.tsx
+│   │   ├── NoteCard.tsx
+│   │   ├── NotesList.tsx
+│   │   └── SearchBar.tsx
+│   ├── newNote/            # Components for NewNote page
+│   │   ├── NewNoteHeader.tsx
+│   │   ├── TextNoteForm.tsx
+│   │   ├── Recorder.tsx
+│   │   └── recorder/
+│   │       ├── AudioPreview.tsx
+│   │       └── RecordingControls.tsx
+│   └── noteDetails/        # Components for NoteDetails page
+│       ├── NoteDetailsHeader.tsx
+│       └── NoteDetailsContent.tsx
 ├── hooks/                  # All custom React hooks centralized
 │   ├── useAudioPlayer.ts   # Audio playback logic
 │   ├── useAudioUrlLoader.ts # Audio URL loading from filesystem
@@ -76,8 +84,8 @@ src/
 │   └── useStorage.ts       # Storage operations hook
 ├── pages/                  # Page components (routes)
 │   ├── Home.tsx            # Main list view with search
-│   ├── NoteView.tsx        # Single note view/editor (orchestrates components)
-│   └── NewNote.tsx         # Create new note (text or audio)
+│   ├── NoteDetails.tsx    # Single note view/editor (orchestrates components)
+│   └── NewNote.tsx        # Create new note (text or audio)
 ├── lib/                    # Core type definitions
 │   └── types.ts            # TypeScript type definitions
 └── utils/                  # All utilities centralized
@@ -226,7 +234,7 @@ The project includes tests for:
 - **Hooks**: All custom hooks in `src/hooks/`
 - **Utils**: All utility functions in `src/utils/`
 - **Tests**: All tests in `src/__tests__/` organized by feature area
-- **Components**: UI components only, no business logic
+- **Components**: UI components organized by page, no business logic
 
 **Benefits:**
 
@@ -351,7 +359,8 @@ The app includes safe area utilities for iOS devices with notches:
 
 - **Hooks**: `import { useNotes } from '../hooks/useNotes'`
 - **Utils**: `import { generateId } from '../utils/id'`
-- **Components**: `import { AudioPlayer } from '../components/AudioPlayer'`
+- **Components**: `import { AudioPlayer } from '../components/shared/AudioPlayer'`
+- **Page-specific**: `import { ActionButtons } from '../components/home/ActionButtons'`
 
 ## Known Limitations
 

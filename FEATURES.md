@@ -32,7 +32,7 @@
 
 ### 5. ✅ View a single note (text or audio)
 
-- **Location**: `src/pages/NoteView.tsx`
+- **Location**: `src/pages/NoteDetails.tsx`
 - **Features**:
   - Display text note body
   - Play audio note with HTML5 audio controls
@@ -67,8 +67,8 @@
 - `src/hooks/useRecorder.ts` - Audio recording logic
 - `src/lib/storage.ts` - Storage abstraction (Preferences)
 - `src/lib/types.ts` - TypeScript types
-- `src/pages/` - 3 main pages (Home, NewNote, NoteView)
-- `src/components/` - Reusable components (NoteCard, Recorder)
+- `src/pages/` - 3 main pages (Home, NewNote, NoteDetails)
+- `src/components/` - Components organized by page (home/, newNote/, noteDetails/, shared/)
 
 ### Interview Talking Points
 
