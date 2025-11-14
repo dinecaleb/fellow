@@ -1,11 +1,10 @@
 /**
- * Audio Preview Component
- * Displays audio player preview after recording
+ * AudioPreviewSection - Audio preview with loading and error states
  */
 
 import { AudioPlayer } from "../../shared/AudioPlayer";
 
-interface AudioPreviewProps {
+interface AudioPreviewSectionProps {
   audioUrl: string | null;
   duration: number;
   fileName: string | null;
@@ -14,20 +13,14 @@ interface AudioPreviewProps {
   onError: (error: string) => void;
 }
 
-/**
- * Audio preview component
- * Shows audio player or loading/error states
- *
- * @param props - Audio preview configuration
- */
-export function AudioPreview({
+export function AudioPreviewSection({
   audioUrl,
   duration,
   fileName,
   error,
   isLoading,
   onError,
-}: AudioPreviewProps) {
+}: AudioPreviewSectionProps) {
   if (error) {
     return (
       <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">

@@ -1,16 +1,16 @@
 /**
  * Recorder component - handles audio recording with playback preview
- * Uses proper Capacitor file loading methods
- *
- * @module Recorder
  */
 
 import { useState, useEffect } from "react";
 import { useRecorder } from "../../hooks/useRecorder";
 import { AudioNote } from "../../lib/types";
-import { RecordingControls } from "./recorder/RecordingControls";
-import { AudioPreview } from "./recorder/AudioPreview";
 import { createAudioUrlFromBase64 } from "../../utils/audio/audioUrlLoader";
+import { RecordingControlsSection } from "./recorder/RecordingControlsSection";
+import { AudioPreviewSection } from "./recorder/AudioPreviewSection";
+import { RecorderActionButtons } from "./recorder/RecorderActionButtons";
+import { RecorderTitleInput } from "./recorder/RecorderTitleInput";
+import { RecorderErrorDisplay } from "./recorder/RecorderErrorDisplay";
 
 interface RecorderProps {
   /** Callback when recording is saved */
@@ -20,10 +20,7 @@ interface RecorderProps {
 }
 
 /**
- * Recorder Component
- * Provides audio recording functionality with preview and save capabilities
- *
- * @param props - Recorder configuration
+ * Recorder Component - Provides audio recording with preview and save
  */
 export function Recorder({ onSave, onCancel }: RecorderProps) {
   const {
@@ -108,29 +105,9 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
     <div className="flex flex-col h-full bg-gray-50">
       <div className="flex-1 p-6">
         <div className="max-w-md mx-auto">
-          {/* Title Input */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter note title..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Recording Controls */}
-          <RecordingControls
+          <RecorderTitleInput value={title} onChange={setTitle} />
+          <RecorderErrorDisplay error={error} />
+          <RecordingControlsSection
             isRecording={isRecording}
             isPaused={isPaused}
             duration={duration}
@@ -140,11 +117,9 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
             onPause={pauseRecording}
             onResume={resumeRecording}
           />
-
-          {/* Audio Preview */}
           {recordingFileName && !isRecording && (
             <div className="w-full animate-fade-in-up">
-              <AudioPreview
+              <AudioPreviewSection
                 audioUrl={audioUrl}
                 duration={duration}
                 fileName={recordingFileName}
@@ -156,24 +131,12 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
           )}
         </div>
       </div>
-
-      {/* Action Buttons */}
       {recordingFileName && !isRecording && (
-        <div className="border-t border-gray-200 bg-white p-4 flex gap-3 animate-fade-in-up">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 active:scale-95 transition-all duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!recordingFileName}
-            className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save
-          </button>
-        </div>
+        <RecorderActionButtons
+          onSave={handleSave}
+          onCancel={onCancel}
+          disabled={!recordingFileName}
+        />
       )}
     </div>
   );

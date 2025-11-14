@@ -38,8 +38,12 @@ export function NoteDetails() {
       if (currentNote.type === "text") {
         setEditBody(currentNote.body);
       }
+    } else if (id && notes.length > 0) {
+      // If currentNote is null but we have notes, the note might have been deleted
+      // or the ID doesn't match - keep existing note state
+      setNote(null);
     }
-  }, [currentNote]);
+  }, [currentNote, id, notes]);
 
   // Load audio when audioPath changes
   const noteAudioPath =
@@ -104,11 +108,8 @@ export function NoteDetails() {
         ...(note.type === "text" && { body: editBody }),
       });
       setIsEditing(false);
-      // Refresh the note
-      const updatedNote = notes.find((n) => n.id === note.id);
-      if (updatedNote) {
-        setNote(updatedNote);
-      }
+      // Note: The note will be automatically updated via the useEffect
+      // that watches currentNote, which depends on the notes array
     } catch (err) {
       console.error("Error updating note:", err);
       alert("Failed to update note");

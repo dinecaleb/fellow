@@ -1,29 +1,22 @@
 /**
- * Recording Controls Component
- * Displays recording controls (start, pause, resume, stop)
+ * RecordingControlsSection - Recording controls UI (start, pause, resume, stop, duration)
  */
 
 import { formatDuration } from "../../../utils/audio/formatUtils";
 import { RecordIcon, PlayIcon, PauseIcon, StopIcon } from "../../shared/icons";
 
-interface RecordingControlsProps {
+interface RecordingControlsSectionProps {
   isRecording: boolean;
   isPaused: boolean;
   duration: number;
   hasPermission: boolean | null;
   onStart: () => Promise<void>;
-  onStop: () => Promise<void>;
-  onPause: () => Promise<void>;
-  onResume: () => Promise<void>;
+  onStop: () => void;
+  onPause: () => void;
+  onResume: () => void;
 }
 
-/**
- * Recording controls UI component
- * Shows start/stop/pause/resume buttons and duration display
- *
- * @param props - Recording control configuration
- */
-export function RecordingControls({
+export function RecordingControlsSection({
   isRecording,
   isPaused,
   duration,
@@ -32,7 +25,7 @@ export function RecordingControls({
   onStop,
   onPause,
   onResume,
-}: RecordingControlsProps) {
+}: RecordingControlsSectionProps) {
   return (
     <div className="flex flex-col items-center gap-4 mb-6">
       {!isRecording && (
