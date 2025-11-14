@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { DocumentIcon } from "./icons";
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -34,19 +35,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
         {/* App Icon */}
         <div className="mb-6 flex justify-center">
           <div className="w-24 h-24 bg-white rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform">
-            <svg
-              className="w-16 h-16 text-indigo-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+            <DocumentIcon className="w-16 h-16 text-indigo-600" />
           </div>
         </div>
 
