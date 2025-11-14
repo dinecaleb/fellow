@@ -20,7 +20,7 @@ export function NewNoteHeader({
       <div className="flex items-center justify-between">
         <button
           onClick={onCancel}
-          className="text-indigo-600 hover:text-indigo-700"
+          className="text-indigo-600 hover:text-indigo-700 active:scale-90 transition-all duration-200"
         >
           <ArrowLeftIcon />
         </button>

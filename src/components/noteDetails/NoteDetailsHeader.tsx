@@ -41,7 +41,7 @@ export function NoteDetailsHeader({
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onBack}
-          className="text-indigo-600 hover:text-indigo-700"
+          className="text-indigo-600 hover:text-indigo-700 active:scale-90 transition-all duration-200"
         >
           <ArrowLeftIcon />
         </button>
@@ -50,14 +50,15 @@ export function NoteDetailsHeader({
             <>
               <button
                 onClick={onEdit}
-                className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg active:scale-90 transition-all duration-200 animate-fade-in-scale"
                 aria-label="Edit note"
               >
                 <EditIcon />
               </button>
               <button
                 onClick={onDelete}
-                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg active:scale-90 transition-all duration-200 animate-fade-in-scale"
+                style={{ animationDelay: "50ms" }}
                 aria-label="Delete note"
               >
                 <DeleteIcon />
@@ -68,12 +69,12 @@ export function NoteDetailsHeader({
       </div>
 
       {isEditing ? (
-        <div className="space-y-3">
+        <div className="space-y-3 animate-fade-in-down">
           <input
             type="text"
             value={editTitle}
             onChange={(e) => onEditTitleChange(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
             placeholder="Title"
           />
           {note.type === "text" && (
@@ -81,27 +82,27 @@ export function NoteDetailsHeader({
               value={editBody}
               onChange={(e) => onEditBodyChange(e.target.value)}
               rows={10}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
               placeholder="Note content..."
             />
           )}
           <div className="flex gap-2">
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 active:scale-95 transition-all duration-200"
             >
               Cancel
             </button>
             <button
               onClick={onSave}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 active:scale-95 transition-all duration-200"
             >
               Save
             </button>
           </div>
         </div>
       ) : (
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {note.title}
           </h1>

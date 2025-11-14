@@ -143,7 +143,7 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
 
           {/* Audio Preview */}
           {recordingFileName && !isRecording && (
-            <div className="w-full">
+            <div className="w-full animate-fade-in-up">
               <AudioPreview
                 audioUrl={audioUrl}
                 duration={duration}
@@ -159,17 +159,17 @@ export function Recorder({ onSave, onCancel }: RecorderProps) {
 
       {/* Action Buttons */}
       {recordingFileName && !isRecording && (
-        <div className="border-t border-gray-200 bg-white p-4 flex gap-3">
+        <div className="border-t border-gray-200 bg-white p-4 flex gap-3 animate-fade-in-up">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 active:scale-95 transition-all duration-200"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!recordingFileName}
-            className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save
           </button>

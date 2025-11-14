@@ -40,7 +40,7 @@ function NoteCardComponent({ note, onClick }: NoteCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 cursor-pointer hover:shadow-md transition-shadow active:bg-gray-50"
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 cursor-pointer hover:shadow-md transition-all duration-200 active:scale-[0.98] active:bg-gray-50 animate-fade-in-up"
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-lg font-semibold text-gray-900 flex-1 line-clamp-2">

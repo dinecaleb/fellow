@@ -46,7 +46,7 @@ export function SearchBar({
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
       />
       {/* Search Icon */}
       <div className="absolute left-3 top-2.5 text-gray-400">
@@ -56,7 +56,7 @@ export function SearchBar({
       {inputValue && (
         <button
           onClick={handleClear}
-          className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 hover:text-gray-600 transition-all duration-200 active:scale-90 animate-fade-in-scale"
           aria-label="Clear search"
         >
           <CloseIcon />
