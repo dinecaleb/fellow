@@ -18,6 +18,8 @@ export interface AudioPlayerProps {
   onError?: (error: string) => void;
   /** File name for native platforms (required for iOS/Android) */
   fileName?: string;
+  /** Title for lock screen controls */
+  title?: string;
 }
 
 /**
@@ -42,6 +44,7 @@ export function AudioPlayer({
   duration,
   onError,
   fileName,
+  title,
 }: AudioPlayerProps) {
   const {
     isPlaying,
@@ -54,6 +57,7 @@ export function AudioPlayer({
     duration,
     onError,
     fileName,
+    title,
   });
 
   return (

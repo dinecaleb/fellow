@@ -12,6 +12,7 @@ interface NoteViewContentProps {
   audioError: string | null;
   duration?: number;
   audioPath?: string;
+  title?: string;
   onAudioError: (error: string) => void;
 }
 
@@ -22,6 +23,7 @@ function NoteViewContentComponent({
   audioError,
   duration,
   audioPath,
+  title,
   onAudioError,
 }: NoteViewContentProps) {
   return (
@@ -47,6 +49,7 @@ function NoteViewContentComponent({
               duration={duration}
               onError={onAudioError}
               fileName={audioPath}
+              title={title}
             />
           ) : !audioError ? (
             <div className="text-center py-8 text-gray-500">

@@ -165,6 +165,7 @@ export function NoteView() {
         audioError={audioError}
         duration={audioDuration}
         audioPath={noteAudioPath || undefined}
+        title={note.title}
         onAudioError={handleAudioError}
       />
     </div>
